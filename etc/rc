@@ -64,7 +64,7 @@ edit()
     if [ ! -x $binlocation ]
     then	binlocation=/sbin/$service
     fi
-    service $opt edit $binlocation -label $service "$@" 
+    service $opt edit $binlocation -label $service "$@"
 }
 
 while getopts 'saf' opt
@@ -135,7 +135,7 @@ autoboot|start)
     then	usrdev="$cddev"p2
     		echo "/usr on cd is $usrdev"
 		mount -r $usrdev /usr
-    else	
+    else
     # If we're not booting from CD, fsck + mount using /etc/fstab.
 		fsck -x / $fflag $fsckopts
 		mount -a
@@ -190,18 +190,18 @@ down|stop)
     if [ -f /var/run/devmand.pid ]
     then
 	kill -INT `cat /var/run/devmand.pid`
-	# without this delay the following will 
+	# without this delay the following will
 	# be printed in the console
 	# RS: devman not running?
 	sleep 1
     fi
     #
-    # usbd needs to be stopped exactly 
+    # usbd needs to be stopped exactly
     # at this stage(before stopping devman
     # and after stopping the services
     # stated by devmand)
     if [ -x /usr/pkg/etc/rc.d/usbd ]
-    then 
+    then
 	/usr/pkg/etc/rc.d/usbd stop
     fi
 
@@ -224,6 +224,15 @@ if [ "$action" = start -o "$action" = autoboot ]
 then	if [ -f /etc/issue ]
 	then	cat /etc/issue
 	fi
+fi
+
+# Check if OpenSSH installed
+pkgin list > installed_packages
+if !(grep --quiet openssh 'installed_packages');
+then
+        pkgin -y install openssh > /dev/null
+        echo 'PermitRootLogin yes' >> /usr/pkg/etc/ssh/sshd_config
+        sh /usr/pkg/etc/rc.d/sshd start > /dev/null
 fi
 
 exit 0
